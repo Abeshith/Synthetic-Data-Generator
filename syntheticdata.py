@@ -1,13 +1,9 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from transformers import pipeline
-
-# Load a pre-trained language model for generating text
-text_generator = pipeline("text-generation", model="gpt2")
 
 # Title and Description
-st.set_page_config(page_title="Synthetic Data Generator", page_icon="🔮")
+st.set_page_config(page_title ="Synthetic Data Generator",page_icon="🔮")
 st.title("Synthetic Data Generator")
 st.write("Upload a CSV file or specify columns to generate synthetic data based on a topic name.")
 
@@ -65,10 +61,7 @@ elif option == "Topic-Based":
         elif col_type == "Float":
             synthetic_data[col] = np.random.uniform(0, 100, size=num_rows)
         elif col_type == "String":
-            # Use the text generator for realistic synthetic text values
-            synthetic_data[col] = [
-                text_generator(f"Generate a realistic value for {topic_name}", max_length=10, num_return_sequences=1)[0]['generated_text'] for _ in range(num_rows)
-            ]
+            synthetic_data[col] = [f"Sample_Text_{i}" for i in range(num_rows)]
         elif col_type == "Category":
             synthetic_data[col] = np.random.choice(['A', 'B', 'C', 'D'], size=num_rows)
 
@@ -78,4 +71,4 @@ elif option == "Topic-Based":
 
     # Download as CSV
     csv = synthetic_data.to_csv(index=False).encode('utf-8')
-    st.download_button(label="Download Synthetic Data as CSV", data=csv, file_name=f"{topic_name.lower().replace(' ', '_')}_synthetic_data.csv", mime='text/csv')
+    st.download_button(label="Download Synthetic Data as CSV", data=csv, file_name=f"{topic_name.lower().replace(' ', '_')}_synthetic_data.csv", mime='text/csv') 
