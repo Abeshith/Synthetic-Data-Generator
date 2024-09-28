@@ -1,10 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from transformers import pipeline
-
-# Load a pre-trained language model for generating text
-text_generator = pipeline("text-generation", model="gpt2")
 
 # Title and Description
 st.set_page_config(page_title="Synthetic Data Generator", page_icon="🔮")
@@ -29,7 +25,7 @@ if uploaded_file is not None and option == "CSV-Based":
     num_rows = st.number_input("Number of Rows to Generate", min_value=1, value=10)
 
     # Generate Synthetic Data by Sampling from Uploaded CSV
-    synthetic_data = input_df.sample(n=num_rows, replace=True).reset_index(drop=True)
+    synthetic_data = input_df.sample(n=num_rows, replace=False).reset_index(drop=True)
     st.write("Generated Synthetic Data:")
     st.dataframe(synthetic_data)
 
@@ -59,19 +55,17 @@ elif option == "Topic-Based":
     # Generate Synthetic Data Based on User-Defined Columns
     synthetic_data = pd.DataFrame()
 
-    # Generate data for each column based on the defined type
+    # Generate unique data for each column based on the defined type
     for col, col_type in column_details.items():
         if col_type == "Integer":
-            synthetic_data[col] = np.random.randint(0, 100, num_rows)
+            synthetic_data[col] = np.random.choice(np.arange(0, 100), size=num_rows, replace=False)
         elif col_type == "Float":
-            synthetic_data[col] = np.random.uniform(0, 100, size=num_rows)
+            synthetic_data[col] = np.random.choice(np.round(np.linspace(0, 100, num_rows * 10)), size=num_rows, replace=False)
         elif col_type == "String":
-            # Use the text generator for realistic synthetic text values
-            synthetic_data[col] = [
-                text_generator(f"Generate a realistic value for {topic_name}", max_length=10, num_return_sequences=1)[0]['generated_text'] for _ in range(num_rows)
-            ]
+            # Generate unique string values
+            synthetic_data[col] = [f"Sample_Text_{i}" for i in range(num_rows)]
         elif col_type == "Category":
-            synthetic_data[col] = np.random.choice(['A', 'B', 'C', 'D'], size=num_rows)
+            synthetic_data[col] = np.random.choice(['A', 'B', 'C', 'D'], size=num_rows, replace=True)
 
     # Display Generated Data
     st.write(f"Generated Synthetic Data for Topic: **{topic_name}**")
