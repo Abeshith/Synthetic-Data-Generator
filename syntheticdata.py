@@ -1,6 +1,10 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+from transformers import pipeline
+
+# Load a pre-trained language model for generating text
+text_generator = pipeline("text-generation", model="gpt2")
 
 # Title and Description
 st.set_page_config(page_title="Synthetic Data Generator", page_icon="🔮")
@@ -24,8 +28,8 @@ if uploaded_file is not None and option == "CSV-Based":
     # Specify Number of Synthetic Rows to Generate
     num_rows = st.number_input("Number of Rows to Generate", min_value=1, value=10)
 
-    # Generate Synthetic Data by Sampling from Uploaded CSV
-    synthetic_data = input_df.sample(n=num_rows, replace=False).reset_index(drop=True)
+    # Generate Synthetic Data by Sampling from Uploaded CSV without repetition
+    synthetic_data = input_df.sample(n=min(num_rows, len(input_df)), replace=False).reset_index(drop=True)
     st.write("Generated Synthetic Data:")
     st.dataframe(synthetic_data)
 
@@ -55,30 +59,24 @@ elif option == "Topic-Based":
     # Generate Synthetic Data Based on User-Defined Columns
     synthetic_data = pd.DataFrame()
 
-    # Generate unique data for each column based on the defined type
+    # Use a set to ensure unique entries
+    unique_entries = set()
+
+    # Generate data for each column based on the defined type
     for col, col_type in column_details.items():
         if col_type == "Integer":
-            if num_rows > 100:  # Adjust max unique integers as needed
-                st.error("Cannot generate more than 100 unique integers.")
-                synthetic_data[col] = np.random.choice(np.arange(0, 100), size=100, replace=False)
-            else:
-                synthetic_data[col] = np.random.choice(np.arange(0, 100), size=num_rows, replace=False)
+            synthetic_data[col] = np.random.choice(np.arange(0, 100), size=num_rows, replace=False)
         elif col_type == "Float":
-            unique_floats = np.round(np.linspace(0, 100, num_rows * 10), 2)
-            if num_rows > len(unique_floats):
-                st.error(f"Cannot generate more than {len(unique_floats)} unique floats.")
-                synthetic_data[col] = np.random.choice(unique_floats, size=len(unique_floats), replace=False)
-            else:
-                synthetic_data[col] = np.random.choice(unique_floats, size=num_rows, replace=False)
+            synthetic_data[col] = np.random.uniform(0, 100, size=num_rows)
         elif col_type == "String":
-            synthetic_data[col] = [f"Sample_Text_{i}" for i in range(num_rows)]
+            while len(synthetic_data[col]) < num_rows:
+                entry = text_generator(f"Generate a realistic value for {topic_name}", max_length=10, num_return_sequences=1)[0]['generated_text']
+                if entry not in unique_entries:
+                    unique_entries.add(entry)
+                    synthetic_data[col].append(entry)
+            synthetic_data[col] = synthetic_data[col][:num_rows]  # Ensure exact number of rows
         elif col_type == "Category":
-            categories = ['A', 'B', 'C', 'D']
-            if num_rows > len(categories):
-                st.error(f"Cannot generate more than {len(categories)} unique categories.")
-                synthetic_data[col] = np.random.choice(categories, size=len(categories), replace=True)
-            else:
-                synthetic_data[col] = np.random.choice(categories, size=num_rows, replace=True)
+            synthetic_data[col] = np.random.choice(['A', 'B', 'C', 'D'], size=num_rows, replace=False)
 
     # Display Generated Data
     st.write(f"Generated Synthetic Data for Topic: **{topic_name}**")
