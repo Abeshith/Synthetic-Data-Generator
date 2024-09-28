@@ -15,7 +15,7 @@ st.write("Upload a CSV file or specify columns to generate synthetic data based 
 uploaded_file = st.file_uploader("Upload your input CSV file", type=["csv"])
 
 # Data Generation Options
-option = st.selectbox("Choose a Data Generation Method", ("CSV-Based", "Topic-Based"))
+option = st.selectbox("Choose a Data Generation Method", ("CSV-Based", "Topic-Based", "Text-Related"))
 
 # CSV-Based Data Generation
 if uploaded_file is not None and option == "CSV-Based":
@@ -65,7 +65,6 @@ elif option == "Topic-Based":
         elif col_type == "Float":
             synthetic_data[col] = np.random.uniform(0, 100, size=num_rows)
         elif col_type == "String":
-            # Use the text generator for realistic synthetic text values
             synthetic_data[col] = [
                 text_generator(f"Generate a realistic value for {topic_name}", max_length=10, num_return_sequences=1)[0]['generated_text'] for _ in range(num_rows)
             ]
@@ -79,3 +78,52 @@ elif option == "Topic-Based":
     # Download as CSV
     csv = synthetic_data.to_csv(index=False).encode('utf-8')
     st.download_button(label="Download Synthetic Data as CSV", data=csv, file_name=f"{topic_name.lower().replace(' ', '_')}_synthetic_data.csv", mime='text/csv')
+
+# Text-Related Data Generation
+elif option == "Text-Related":
+    text_type = st.selectbox("Choose the Text Type", ("Spam Detection", "Sentiment Analysis"))
+
+    # Specify Number of Rows for Text Generation
+    num_rows = st.number_input("Number of Rows to Generate", min_value=1, value=10)
+
+    if text_type == "Spam Detection":
+        # Generate synthetic spam and not spam messages
+        synthetic_data = pd.DataFrame({
+            "Text": [],
+            "Label": []
+        })
+
+        for _ in range(num_rows):
+            if np.random.rand() > 0.5:  # 50% chance of being spam
+                text = text_generator("Generate a spam message", max_length=10, num_return_sequences=1)[0]['generated_text']
+                label = "spam"
+            else:
+                text = text_generator("Generate a non-spam message", max_length=10, num_return_sequences=1)[0]['generated_text']
+                label = "not spam"
+            synthetic_data = synthetic_data.append({"Text": text, "Label": label}, ignore_index=True)
+
+    elif text_type == "Sentiment Analysis":
+        # Generate synthetic sentences with sentiments
+        synthetic_data = pd.DataFrame({
+            "Text": [],
+            "Sentiment": []
+        })
+
+        sentiments = ["positive", "negative", "neutral"]
+        for _ in range(num_rows):
+            sentiment = np.random.choice(sentiments)
+            if sentiment == "positive":
+                text = text_generator("Generate a positive sentence", max_length=10, num_return_sequences=1)[0]['generated_text']
+            elif sentiment == "negative":
+                text = text_generator("Generate a negative sentence", max_length=10, num_return_sequences=1)[0]['generated_text']
+            else:
+                text = text_generator("Generate a neutral sentence", max_length=10, num_return_sequences=1)[0]['generated_text']
+            synthetic_data = synthetic_data.append({"Text": text, "Sentiment": sentiment}, ignore_index=True)
+
+    # Display Generated Text Data
+    st.write(f"Generated Synthetic Data for {text_type}:")
+    st.dataframe(synthetic_data)
+
+    # Download as CSV
+    csv = synthetic_data.to_csv(index=False).encode('utf-8')
+    st.download_button(label="Download Synthetic Data as CSV", data=csv, file_name=f"{text_type.lower().replace(' ', '_')}_synthetic_data.csv", mime='text/csv')
