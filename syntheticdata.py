@@ -88,10 +88,7 @@ elif option == "Text-Related":
 
     if text_type == "Spam Detection":
         # Generate synthetic spam and not spam messages
-        synthetic_data = pd.DataFrame({
-            "Text": [],
-            "Label": []
-        })
+        synthetic_data = pd.DataFrame(columns=["Text", "Label"])
 
         for _ in range(num_rows):
             if np.random.rand() > 0.5:  # 50% chance of being spam
@@ -100,14 +97,11 @@ elif option == "Text-Related":
             else:
                 text = text_generator("Generate a non-spam message", max_length=10, num_return_sequences=1)[0]['generated_text']
                 label = "not spam"
-            synthetic_data = synthetic_data.append({"Text": text, "Label": label}, ignore_index=True)
+            synthetic_data = pd.concat([synthetic_data, pd.DataFrame({"Text": [text], "Label": [label]})], ignore_index=True)
 
     elif text_type == "Sentiment Analysis":
         # Generate synthetic sentences with sentiments
-        synthetic_data = pd.DataFrame({
-            "Text": [],
-            "Sentiment": []
-        })
+        synthetic_data = pd.DataFrame(columns=["Text", "Sentiment"])
 
         sentiments = ["positive", "negative", "neutral"]
         for _ in range(num_rows):
@@ -118,7 +112,7 @@ elif option == "Text-Related":
                 text = text_generator("Generate a negative sentence", max_length=10, num_return_sequences=1)[0]['generated_text']
             else:
                 text = text_generator("Generate a neutral sentence", max_length=10, num_return_sequences=1)[0]['generated_text']
-            synthetic_data = synthetic_data.append({"Text": text, "Sentiment": sentiment}, ignore_index=True)
+            synthetic_data = pd.concat([synthetic_data, pd.DataFrame({"Text": [text], "Sentiment": [sentiment]})], ignore_index=True)
 
     # Display Generated Text Data
     st.write(f"Generated Synthetic Data for {text_type}:")
