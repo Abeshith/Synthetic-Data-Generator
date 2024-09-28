@@ -10,7 +10,10 @@ text_generator = pipeline("text-generation", model="gpt2")
 st.set_page_config(page_title="Synthetic Data Generator", page_icon="🔮")
 st.title("Synthetic Data Generator")
 st.write("Upload a CSV file or specify columns to generate synthetic data based on a topic name.")
-st.write("**Note:** This generator is not suitable for text-related tasks such as spam detection and sentiment analysis.")
+
+# Sidebar Note
+st.sidebar.markdown("### Important Note:")
+st.sidebar.write("This generator is not suitable for text-related tasks such as spam detection and sentiment analysis.Also Add rows one by one and if ypu add 5-10 rows at onece it'll show error!!")
 
 # File Uploader for CSV-Based Generation
 uploaded_file = st.file_uploader("Upload your input CSV file", type=["csv"])
