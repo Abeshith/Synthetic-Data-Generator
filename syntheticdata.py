@@ -58,14 +58,27 @@ elif option == "Topic-Based":
     # Generate unique data for each column based on the defined type
     for col, col_type in column_details.items():
         if col_type == "Integer":
-            synthetic_data[col] = np.random.choice(np.arange(0, 100), size=num_rows, replace=False)
+            if num_rows > 100:  # Adjust max unique integers as needed
+                st.error("Cannot generate more than 100 unique integers.")
+                synthetic_data[col] = np.random.choice(np.arange(0, 100), size=100, replace=False)
+            else:
+                synthetic_data[col] = np.random.choice(np.arange(0, 100), size=num_rows, replace=False)
         elif col_type == "Float":
-            synthetic_data[col] = np.random.choice(np.round(np.linspace(0, 100, num_rows * 10)), size=num_rows, replace=False)
+            unique_floats = np.round(np.linspace(0, 100, num_rows * 10), 2)
+            if num_rows > len(unique_floats):
+                st.error(f"Cannot generate more than {len(unique_floats)} unique floats.")
+                synthetic_data[col] = np.random.choice(unique_floats, size=len(unique_floats), replace=False)
+            else:
+                synthetic_data[col] = np.random.choice(unique_floats, size=num_rows, replace=False)
         elif col_type == "String":
-            # Generate unique string values
             synthetic_data[col] = [f"Sample_Text_{i}" for i in range(num_rows)]
         elif col_type == "Category":
-            synthetic_data[col] = np.random.choice(['A', 'B', 'C', 'D'], size=num_rows, replace=True)
+            categories = ['A', 'B', 'C', 'D']
+            if num_rows > len(categories):
+                st.error(f"Cannot generate more than {len(categories)} unique categories.")
+                synthetic_data[col] = np.random.choice(categories, size=len(categories), replace=True)
+            else:
+                synthetic_data[col] = np.random.choice(categories, size=num_rows, replace=True)
 
     # Display Generated Data
     st.write(f"Generated Synthetic Data for Topic: **{topic_name}**")
