@@ -13,7 +13,7 @@ st.write("Upload a CSV file or specify columns to generate synthetic data based 
 
 # Sidebar Note
 st.sidebar.markdown("### Important Note:")
-st.sidebar.write("Add rows one by one and if ypu add 5-10 rows at onece it'll show error!!")
+st.sidebar.write("Add rows one by one and if you add 5-10 rows at onece it'll show error!!")
 
 # File Uploader for CSV-Based Generation
 uploaded_file = st.file_uploader("Upload your input CSV file", type=["csv"])
